@@ -19,7 +19,7 @@ MySqli_Import_Export
  */
 
 
-$dbmanager = New dbmanager;
+$dbmanager = new dbmanager;
 
 $config = array(
 	'db_host' => db_host,
