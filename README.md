@@ -26,6 +26,7 @@ $config = array(
 	'db_uname' => db_uname,
 	'db_pass' => db_pass,
 	'db_name' => db_name,
+	'tables' => array('table1','table2'), // Default NULL
 	'filename' => 'Backup_'.date('Y_m_d')			
 	);
 
