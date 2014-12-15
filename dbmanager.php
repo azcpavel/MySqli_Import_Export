@@ -1,28 +1,31 @@
 <?php
 
 /**
- * 
+ * @author awan < http://www.nawa.me >
+ * @edited By Ahsan Zahid Chowdhury < http://itszahid.info >
+ * @date 2014-12-10
+ * @Description To enable custome tables selection during export.
+ * Fixed import & export format & errors
+ * Converted to Object
  */
 class dbmanager {
 
-	private $dir 		= '';
-	private $name 		= '';
-	private $db_host 	= '';
-	private $db_uname 	= '';
-	private $db_pass 	= '';
-	private $db_name 	= '';
-	private $filename 	= 'backup';
-	private $tables 	= NULL;
+    //Private Property
+    private $dir        = '';
+    private $name       = '';
+    private $db_host    = '';
+    private $db_uname   = '';
+    private $db_pass    = '';
+    private $db_name    = '';
+    private $filename   = 'backup';    
+    private $tables     = NULL;
 
-    function __construct($argument = NULL) {
-        # code...
+    //Public Property
+    public $errors      = '';
+
+    function __construct() {
+        $this->errors = '';
     }
-
-    /**
-     * @author awan < http://www.nawa.me >
-     * @edited By Ahsan Zahid Chowdhury < http://itszahid.info >
-     * @Description To enable custome tables selection during export and fixed import error
-     */
 
     /**
      * Function to build SQL /Exporting SQL DATA
@@ -37,24 +40,24 @@ class dbmanager {
      */
 
     function exportMysqlDb($config =  array( 
-				    						'dir' 	=> '',
-				    						'name' 	=> '',
-				    						'db_host' => '',
-				    						'db_uname' => '',
-				    						'db_pass' => '',
-				    						'db_name' => '',
-				    						'filename' => '',
-				    						'tables' => NULL)
-				    						) {
+                                            'dir'   => '',
+                                            'name'  => '',
+                                            'db_host' => '',
+                                            'db_uname' => '',
+                                            'db_pass' => '',
+                                            'db_name' => '',
+                                            'filename' => '',
+                                            'tables' => NULL)
+                                            ) {
 
-    	foreach ($config as $key => $value) {
-    		$this->$key = $value; // Assign the values to valiables
-    	}
+        foreach ($config as $key => $value) {
+            $this->$key = $value; // Assign the values to valiables
+        }
 
-    	if($this->dir == '')
-    		$this->dir = dirname(__FILE__);    	
+        if($this->dir == '')
+            $this->dir = dirname(__FILE__);     
 
-        return $this->backup_MysqliDatabase($this->dir, $this->filename, $this->db_host, $this->db_uname, $this->db_pass, $this->db_name, $this->tables); // execute		
+        return $this->backup_MysqliDatabase($this->dir, $this->filename, $this->db_host, $this->db_uname, $this->db_pass, $this->db_name, $this->tables); // execute        
     }
 
     /**
@@ -70,27 +73,27 @@ class dbmanager {
      */
 
     function importMysqlDb($config =  array( 
-				    						'dir' 	=> '',
-				    						'name' 	=> '',
-				    						'db_host' => '',
-				    						'db_uname' => '',
-				    						'db_pass' => '',
-				    						'db_name' => '',
-				    						'filename' => '',
-				    						'tables' => NULL)
-				    						) {
+                                            'dir'   => '',
+                                            'name'  => '',
+                                            'db_host' => '',
+                                            'db_uname' => '',
+                                            'db_pass' => '',
+                                            'db_name' => '',
+                                            'filename' => '',
+                                            'tables' => NULL)
+                                            ) {
 
-    	foreach ($config as $key => $value) {
-    		$this->$key = $value; // Assign the values to valiables
-    	}
+        foreach ($config as $key => $value) {
+            $this->$key = $value; // Assign the values to valiables
+        }
 
-    	if($this->dir == '')
-    		$this->dir = dirname(__FILE__);
+        if($this->dir == '')
+            $this->dir = dirname(__FILE__);
 
-    	$file = $this->dir.$this->filename; // sql data file
-		$args = file_get_contents($file); // get contents 
+        $file = $this->dir.$this->filename; // sql data file
+        $args = file_get_contents($file); // get contents 
 
-        return $this->import_MysqliDatabase($args, $this->db_host, $this->db_uname, $this->db_pass, $this->db_name); // execute		
+        return $this->import_MysqliDatabase($args, $this->db_host, $this->db_uname, $this->db_pass, $this->db_name); // execute     
     }
 
 
@@ -102,7 +105,7 @@ class dbmanager {
      * @param string $dbuser database user
      * @param string $dbpass database password
      * @param string $dbname database name     
-     * @return string complete if complete
+     * @return true complete if complete
      */
 
     private function import_MysqliDatabase($args, $dbhost, $dbuser, $dbpass, $dbname) {
@@ -127,7 +130,8 @@ class dbmanager {
         }
 
         if (!$lines) {
-            return '' . 'cannot execute ' . $args;
+            $this->errors .= '' . 'cannot execute ' . $args;
+            return false;
         }
 
         $scriptfile = false;
@@ -160,15 +164,17 @@ class dbmanager {
         }
 
 
-        if ($queryerrors) {
-            return '' . 'There was an error on File: ' . $this->filename . '<br>' . $queryerrors;
+        if ($queryerrors) {            
+            $queryerrors .= 'There was an error on File: ' . $this->filename . '<br>' . $queryerrors;
+            $this->errors .= $queryerrors; 
+            return false;
         }
 
         if ($mysqli && !$mysqli->error) {
             @$mysqli->close();
         }
 
-        return 'complete dumping database !';
+        return true;
     }
 
     /**
@@ -183,7 +189,7 @@ class dbmanager {
      * @param string $dbuser database user
      * @param string $dbpass database password
      * @param string $dbname database name
-     *
+     * @return true complete if complete
      */
     private function backup_MysqliDatabase($directory, $outname, $dbhost, $dbuser, $dbpass, $dbname, $tables) {
 
@@ -235,7 +241,7 @@ class dbmanager {
                     }
                 }
 
-                if (!empty($tables)) {                	
+                if (!empty($tables)) {                  
                     //cycle through
                     $return = '';
                     foreach ($tables as $table) {
@@ -310,14 +316,14 @@ class dbmanager {
 
                     $return = "-- ---------------------------------------------------------
 --
--- SIMPLE SQL Dump	
+-- SIMPLE SQL Dump  
 -- http://www.nawa.me/
 --
 -- Edited By Ahsan Zahid Chowdhury
 -- http://itszahid.info
 --
 -- Host Connection Info: " . $mysqli->host_info . "
--- Generation Time: " . date('F d, Y \a\t H:i A ( e )') . "	
+-- Generation Time: " . date('F d, Y \a\t H:i A ( e )') . " 
 -- PHP Version: " . PHP_VERSION . "
 --
 -- ---------------------------------------------------------\n\n
@@ -337,7 +343,7 @@ SET time_zone = \"+00:00\";
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;";
-	
+    
 
                     # end values result
                     // echo $return;exit;
@@ -348,7 +354,7 @@ SET time_zone = \"+00:00\";
                     if (@ file_put_contents($fullname, $gzipoutput)) { # 9 as compression levels
                         $result = $name . '.sql.gz'; # show the name
                     } else { # if could not put file , automaticly you will get the file as downloadable
-                        $result = false;
+                        $result = true;
                         // various headers, those with # are mandatory
                         header('Content-Type: application/octet-stream');
                         header("Content-Description: File Transfer");
@@ -365,18 +371,18 @@ SET time_zone = \"+00:00\";
                     }
                 } else {
 
-                    $result = '<p>Error when executing database query to export.</p>' . $mysqli->error;
+                    $this->errors .= '<p>Error when executing database query to export.</p>' . $mysqli->error;
                 }
             }
         } else {
-            $result = '<p>Wrong mysqli input</p>';
+            $this->errors .= '<p>Wrong mysqli input</p>';
         }
 
         if ($mysqli && !$mysqli->error) {
             @$mysqli->close();
         }
 
-        return $result;
+        return false;
     }
 
 }
