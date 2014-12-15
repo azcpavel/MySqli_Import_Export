@@ -36,7 +36,7 @@ class dbmanager {
      * @param string $dbpass database password
      * @param string $dbname database name
      * @param array $tables name in array default NULL
-     * @return string complete if complete
+     * @return true complete if complete
      */
 
     function exportMysqlDb($config =  array( 
@@ -69,7 +69,7 @@ class dbmanager {
      * @param string $dbpass database password
      * @param string $dbname database name
      * @param array $tables name in array default NULL
-     * @return string complete if complete
+     * @return true complete if complete
      */
 
     function importMysqlDb($config =  array( 
